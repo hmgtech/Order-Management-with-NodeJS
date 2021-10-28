@@ -22,7 +22,7 @@ module.exports = (sequelize, Sequelize) => {
         // },
         order_date :{ 
             type: Sequelize.DATE,
-            defaultValue: Sequelize.fn('NOW') //Sequelize.NOW
+            defaultValue: Sequelize.NOW //Sequelize.fn('NOW') //Sequelize.NOW
         },
         order_status : {
             type: Sequelize.STRING(10)
@@ -32,12 +32,12 @@ module.exports = (sequelize, Sequelize) => {
         },
         payment_date :{ 
             type: Sequelize.DATE,
-            defaultValue: Sequelize.fn('NOW') //Sequelize.NOW
+            defaultValue: Sequelize.NOW//Sequelize.fn('NOW') //Sequelize.NOW
         },
         order_shipment_date :{ 
             type: Sequelize.DATE,
-            defaultValue: Sequelize.fn('NOW') //Sequelize.NOW
-        },
+            defaultValue: Sequelize.NOW//Sequelize.NOW //Sequelize.NOW
+        }
         // shipper_id : { //shipper_id can be removed as sequelize will automatically add it when it see it as FK
         //     type: Sequelize.INTEGER(6)
         // }

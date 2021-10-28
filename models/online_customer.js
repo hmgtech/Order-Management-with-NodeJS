@@ -39,7 +39,9 @@ module.exports = (sequelize, Sequelize) => {
             defaultValue: Sequelize.NOW //Sequelize.fn('NOW')
         },
         customer_username : {
-            type: Sequelize.STRING(20)
+            type: Sequelize.STRING(20),
+            unique: true,
+            allowNull: false
         },
         customer_gender : {
             type: Sequelize.CHAR(1)
