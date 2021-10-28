@@ -19,10 +19,14 @@ module.exports = (sequelize, Sequelize) => {
         shipper_phone : {
             type: Sequelize.BIGINT(12)
         },
-        shipper_address : { //shipper_address can be removed as sequelize will automatically add it when it see it as FK
-            type: Sequelize.INTEGER(6)
-        }
+        // shipper_address : { //shipper_address can be removed as sequelize will automatically add it when it see it as FK
+        //     type: Sequelize.INTEGER(6)
+        // }
         
+    },
+    {
+        underscored: true,
+        paranoid: false
     })
     return Shipper;
 }

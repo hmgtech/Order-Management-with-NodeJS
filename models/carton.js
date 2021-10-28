@@ -22,6 +22,10 @@ module.exports = (sequelize, Sequelize) => {
         height : {
             type: Sequelize.BIGINT(10)
         }        
+    },
+    {
+        underscored: true,
+        paranoid: false
     })
     return Carton;
 }

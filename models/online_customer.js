@@ -31,9 +31,9 @@ module.exports = (sequelize, Sequelize) => {
         customer_phone : {
             type: Sequelize.BIGINT(10)
         },
-        address_id : { //address id can be removed as sequelize will automatically add it when it see it as FK
-            type: Sequelize.INTEGER(11),
-        },
+        // address_id : { //address id can be removed as sequelize will automatically add it when it see it as FK
+        //     type: Sequelize.INTEGER(11),
+        // },
         customer_creation_date :{ 
             type: Sequelize.DATE,
             defaultValue: Sequelize.fn('NOW') //Sequelize.NOW
@@ -45,6 +45,10 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.CHAR(1)
         }
         
+    },
+    {
+        underscored: true,
+        paranoid: false
     })
     return Online_Customer;
 }

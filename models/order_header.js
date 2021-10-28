@@ -17,9 +17,9 @@ module.exports = (sequelize, Sequelize) => {
             autoIncrement: true,
             primaryKey: true
         },
-        customer_id : { //customer_id can be removed as sequelize will automatically add it when it see it as FK
-            type: Sequelize.INTEGER(6)
-        },
+        // customer_id : { //customer_id can be removed as sequelize will automatically add it when it see it as FK
+        //     type: Sequelize.INTEGER(6)
+        // },
         order_date :{ 
             type: Sequelize.DATE,
             defaultValue: Sequelize.fn('NOW') //Sequelize.NOW
@@ -38,10 +38,14 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.DATE,
             defaultValue: Sequelize.fn('NOW') //Sequelize.NOW
         },
-        shipper_id : {
-            type: Sequelize.INTEGER(6)
-        }
+        // shipper_id : { //shipper_id can be removed as sequelize will automatically add it when it see it as FK
+        //     type: Sequelize.INTEGER(6)
+        // }
         
+    },
+    {
+        underscored: true,
+        paranoid: false
     })
     return Order_Header;
 }

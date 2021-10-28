@@ -43,6 +43,10 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.DECIMAL(12,2)
         }
         
+    },
+    {
+        underscored: true,
+        paranoid: false
     })
     return Product;
 }
