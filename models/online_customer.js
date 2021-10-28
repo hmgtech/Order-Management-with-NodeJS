@@ -36,7 +36,7 @@ module.exports = (sequelize, Sequelize) => {
         // },
         customer_creation_date :{ 
             type: Sequelize.DATE,
-            defaultValue: Sequelize.fn('NOW') //Sequelize.NOW
+            defaultValue: Sequelize.NOW //Sequelize.fn('NOW')
         },
         customer_username : {
             type: Sequelize.STRING(20)
