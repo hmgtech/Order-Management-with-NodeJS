@@ -9,6 +9,7 @@ const OrderHeaderTabeReference = db.order_header
 const ShipperTabeReference = db.shipper
 const OrderItemTableReference = db.order_item
 const ProductTableReference = db.product
+const ProductClassTableReference = db.product_class
 
 
 exports.addAddress = (req, res) => {
@@ -236,4 +237,31 @@ exports.addOrderItems = (req, res) => {
       });
 };
 
+exports.addProductClass = (req, res) => {
+    // Validate request
+    if (!req.body.product_class_code || !req.body.product_class_desc) {
+      res.status(400).send({
+        message: "Customer First Name can not be empty!"
+      });
+      return;
+    }
+  
+    // Create a Record
+    const productClassContent = {
+        product_class_code: req.body.product_class_code,
+        product_class_desc: req.body.product_class_desc
+    };
+  
+    // Save Record in the database
+    ProductClassTableReference.create(productClassContent)
+      .then(data => {
+        res.send(data);
+      })
+      .catch(err => {
+        res.status(500).send({
+          message:
+            err.message || "Some error occurred while creating the Record."
+        });
+      });
+};
 

@@ -11,6 +11,8 @@ module.exports = app => {
     router.post("/addShipper", OrderManagemetController.addShipper);
     router.post("/addProducts", OrderManagemetController.addProducts);
     router.post("/addOrderItems", OrderManagemetController.addOrderItems);
+    router.post("/addProductClass", OrderManagemetController.addProductClass);
+    
 
 
     app.use("/api/ordermanagement", router);
