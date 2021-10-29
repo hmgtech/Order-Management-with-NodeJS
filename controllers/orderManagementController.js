@@ -34,7 +34,7 @@ exports.addAddress = (req, res) => {
     // Save Record in the database
     AddressTableReference.create(addressContent)
       .then(data => {
-        res.send(data);
+        res.status(201).send(data);
       })
       .catch(err => {
         res.status(500).send({
@@ -69,7 +69,7 @@ exports.addOnlineCustomer = (req, res) => {
     // Save Record in the database
     OnlineCustomerTableReference.create(onlineCustomerContent)
       .then(data => {
-        res.send(data);
+        res.status(201).send(data);
       })
       .catch(err => {
         res.status(500).send({
@@ -99,7 +99,7 @@ exports.addCarton = (req, res) => {
     // Save Record in the database
     CartonTableReference.create(cartonContent)
       .then(data => {
-        res.send(data);
+        res.status(201).send(data);
       })
       .catch(err => {
         res.status(500).send({
@@ -133,7 +133,7 @@ exports.addOrderHeader = (req, res) => {
     // Save Record in the database
     OrderHeaderTabeReference.create(orderHeaderContent)
       .then(data => {
-        res.send(data);
+        res.status(201).send(data);
       })
       .catch(err => {
         res.status(500).send({
@@ -162,7 +162,7 @@ exports.addShipper = (req, res) => {
     // Save Record in the database
     ShipperTabeReference.create(shipperContent)
       .then(data => {
-        res.send(data);
+        res.status(201).send(data);
       })
       .catch(err => {
         res.status(500).send({
@@ -198,7 +198,7 @@ exports.addProducts = (req, res) => {
     // Save Record in the database
     ProductTableReference.create(productContent)
       .then(data => {
-        res.send(data);
+        res.status(201).send(data);
       })
       .catch(err => {
         res.status(500).send({
@@ -227,7 +227,7 @@ exports.addOrderItems = (req, res) => {
     // Save Record in the database
     OrderItemTableReference.create(orderItemContent)
       .then(data => {
-        res.send(data);
+        res.status(201).send(data);
       })
       .catch(err => {
         res.status(500).send({
@@ -255,7 +255,7 @@ exports.addProductClass = (req, res) => {
     // Save Record in the database
     ProductClassTableReference.create(productClassContent)
       .then(data => {
-        res.send(data);
+        res.status(201).send(data);
       })
       .catch(err => {
         res.status(500).send({
