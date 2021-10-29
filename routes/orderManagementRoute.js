@@ -4,14 +4,14 @@ module.exports = app => {
     var router = require("express").Router();
    
     // Create a new Records
-    router.post("/addAddress", OrderManagemetController.addAddress);
-    router.post("/addOnlineCustomer", OrderManagemetController.addOnlineCustomer);
-    router.post("/addCarton", OrderManagemetController.addCarton);
-    router.post("/addOrderHeader", OrderManagemetController.addOrderHeader);
-    router.post("/addShipper", OrderManagemetController.addShipper);
-    router.post("/addProducts", OrderManagemetController.addProducts);
-    router.post("/addOrderItems", OrderManagemetController.addOrderItems);
-    router.post("/addProductClass", OrderManagemetController.addProductClass);
+    router.post("/address", OrderManagemetController.addAddress);
+    router.post("/onlineCustomer", OrderManagemetController.addOnlineCustomer);
+    router.post("/carton", OrderManagemetController.addCarton);
+    router.post("/orderHeader", OrderManagemetController.addOrderHeader);
+    router.post("/shipper", OrderManagemetController.addShipper);
+    router.post("/product", OrderManagemetController.addProducts);
+    router.post("/orderItem", OrderManagemetController.addOrderItems);
+    router.post("/productClass", OrderManagemetController.addProductClass);
     
 
 
