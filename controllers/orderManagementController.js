@@ -11,6 +11,12 @@ const OrderItemTableReference = db.order_item
 const ProductTableReference = db.product
 const ProductClassTableReference = db.product_class
 
+const errHandler = (err => {
+  res.status(500).send({
+    message:
+      err.message || "Some error occurred while retrieving OrderItems."
+  })
+})
 
 exports.addAddress = (req, res) => {
     // Validate request
@@ -264,4 +270,111 @@ exports.addProductClass = (req, res) => {
         });
       });
 };
+
+exports.getAllAddress = (req, res) => {
+  AddressTableReference.findAll()
+  .then(data => {
+    res.send(data).status(200)
+  })
+  .catch(err => {
+    res.status(500).send({
+      message:
+        err.message || "Some error occurred while creating the Record."
+    });
+  });
+}
+
+exports.getAddress = (req, res) => {
+  const id = req.params.id;
+  AddressTableReference.findByPk(id)
+  .then(data => {
+    console.log("res data: ",data);
+    res.status(200).send(data)
+  })
+  .catch(err => {
+    res.status(500).send({
+      message:
+        err.message || "Some error occurred while creating the Record."
+    });
+  });
+}
+
+exports.updateAddress = (req, res) => {
+  const id = req.params.id;
+  AddressTableReference.update(req.body, { where : {address_id: id}
+  })
+  .then(num => {
+    if (num == 1) {
+      res.send({
+        message: "OrderItem was updated successfully."
+      });
+    } else {
+      res.send({
+        message: `Cannot update OrderItem with id=${id}. Maybe OrderItem was not found or req.body is empty!`
+      });
+    }
+  })
+  .catch(err => {
+    res.status(500).send({
+      message: "Error updating OrderItem with id=" + id
+    });
+  });
+}
+
+exports.deleteAddress = (req, res) => {
+  const id = req.params.id;
+
+  AddressTableReference.destroy({
+    where: { address_id: id }
+  })
+    .then(num => {
+      if (num == 1) {
+        res.send({
+          message: "OrderItem was deleted successfully!"
+        });
+      } else {
+        res.send({
+          message: `Cannot delete OrderItem with id=${id}. Maybe OrderItem was not found!`
+        });
+      }
+    })
+    .catch(err => {
+      res.status(500).send({
+        message: "Could not delete OrderItem with id=" + id
+      });
+    });
+}
+
+exports.deleteAllAddress = (req, res) => {
+  AddressTableReference.destroy({
+    where: {},
+    truncate: false
+  })
+    .then(nums => {
+      res.send({ message: `${nums} OrderItems were deleted successfully!` });
+    })
+    .catch(err => {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while removing all OrderItems."
+      })
+    })
+}
+
+exports.getAddressByState = (req, res) => {
+  const state = req.params.ch;
+  console.log("State: "+state);
+  var condition = state ? { state: { [Op.like]: `%${state}%` } } : null;
+
+  AddressTableReference.findAll({ where: condition })
+    .then(data => {
+      res.send(data);
+    })
+    .catch(err => {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while retrieving OrderItems."
+      });
+    });
+}
 
