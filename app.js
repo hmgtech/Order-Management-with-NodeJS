@@ -1,3 +1,5 @@
+const version = "v1"
+
 const express = require("express")
 const bodyParser = require("body-parser")
 
@@ -24,7 +26,7 @@ db.sequelize.sync();
 
 
 // Order Management Routes
-require("./routes/orderManagementRoute")(app);
+require("./routes/orderManagementRoute")(app, version);
 
 
 

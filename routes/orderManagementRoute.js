@@ -1,4 +1,4 @@
-module.exports = app => {
+module.exports = (app, version) => {
     const OrderManagemetController = require("../controllers/orderManagementController");
   
     var router = require("express").Router();
@@ -28,6 +28,6 @@ module.exports = app => {
 
 
 
-    app.use("/api/ordermanagement", router);
+    app.use(`/${version}/api/ordermanagement`, router);
   };
   
