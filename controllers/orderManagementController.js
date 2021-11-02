@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken")
 const db = require("../models");
 const Op = db.Sequelize.Op;
 
@@ -272,9 +273,31 @@ exports.addProductClass = (req, res) => {
 };
 
 exports.getAllAddress = (req, res) => {
-  AddressTableReference.findAll()
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if(err){
+      res.sendStatus(403)
+    }
+    else{
+      AddressTableReference.findAll()
+      .then(data => {
+        res.send(data).status(200)
+      })
+      .catch(err => {
+        res.status(500).send({
+          message:
+            err.message || "Some error occurred while creating the Record."
+        });
+      });
+    }
+  })
+}
+
+exports.getAddress = (req, res) => {
+  const id = req.params.id;
+  AddressTableReference.findByPk(id)
   .then(data => {
-    res.send(data).status(200)
+    console.log("res data: ",data);
+    res.status(200).send(data)
   })
   .catch(err => {
     res.status(500).send({
@@ -284,9 +307,19 @@ exports.getAllAddress = (req, res) => {
   });
 }
 
-exports.getAddress = (req, res) => {
-  const id = req.params.id;
-  AddressTableReference.findByPk(id)
+exports.getCustomer = (req, res) => {
+  const input_username = req.body.username; //we can add email also
+
+  // Validate request
+  if (!input_username) {
+    res.status(400).send({
+      message: "Username can not be empty!"
+    });
+    return;
+  }
+  var condition = { customer_username: input_username}
+
+  OnlineCustomerTableReference.findOne({ where: condition })
   .then(data => {
     console.log("res data: ",data);
     res.status(200).send(data)
@@ -378,3 +411,31 @@ exports.getAddressByState = (req, res) => {
     });
 }
 
+exports.jwtLogin = (req, res) => {
+  const input_username = req.body.username; //we can add email also
+
+  // Validate request
+  if (!input_username) {
+    res.status(400).send({
+      message: "Username can not be empty!"
+    });
+    return;
+  }
+  var condition = { customer_username: input_username}
+  OnlineCustomerTableReference.findOne({ where: condition })
+  .then(data => {
+    console.log("res data: ",data['dataValues']);
+    jwt.sign({user: data}, 'secretkey',{expiresIn: '30s'}, (err, token) => {
+      res.send({
+          token: token
+      })
+    })
+  })
+  .catch(err => {
+    res.status(403).send({
+      message:
+        // err.message || "Some error occurred while creating the Record."
+        "Forbidden"
+    });
+  });
+}
