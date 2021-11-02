@@ -20,6 +20,9 @@ module.exports = (app, version) => {
                                 .delete(OrderManagemetController.deleteAddress)
     router.route("/address/state/:ch").get(OrderManagemetController.getAddressByState)
 
+    // Get Userdata
+    router.route("/username").get(OrderManagemetController.getCustomer)
+
     //Update Records
     // router.put("/address/:id", OrderManagemetController.updateAddress)
 
