@@ -105,7 +105,8 @@ exports.signup = async (req, res) => {
       });
       return;
     }
-    const hashedPassword = await bcrypt.hash(req.body.password, 10)
+    const salt = await bcrypt.genSalt()
+    const hashedPassword = await bcrypt.hash(req.body.password, salt)
     const onlineCustomerContent = {
       customer_fname: req.body.customer_fname,
       customer_lname: req.body.customer_lname ? req.body.customer_lname : '',
