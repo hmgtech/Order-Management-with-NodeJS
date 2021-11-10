@@ -45,6 +45,10 @@ module.exports = (sequelize, Sequelize) => {
         },
         customer_gender : {
             type: Sequelize.CHAR(1)
+        },
+        customer_password : {
+            type: Sequelize.STRING(255),
+            allowNull: false
         }
         
     },

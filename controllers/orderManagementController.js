@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken")
 const db = require("../models");
+var bcrypt = require('bcrypt');
+require("dotenv").config()
 const Op = db.Sequelize.Op;
 
 // Intializing Tables
@@ -12,16 +14,33 @@ const OrderItemTableReference = db.order_item
 const ProductTableReference = db.product
 const ProductClassTableReference = db.product_class
 
-const errHandler = (err => {
-  res.status(500).send({
-    message:
-      err.message || "Some error occurred while retrieving OrderItems."
-  })
-})
+function errorHandler(err, req){
+  console.log(err);
+  let status = 500
+  let message = "Some error occurred."
+  if (err.parent.errno === 1452){
+    return {
+      status: 404,
+      message: `ID ${ req.body.customer_id} doesnot exist.`
+    };
+  }
+  if (err.parent.errno === 1009){
+    return {
+      status: 500,
+      message: `ID ${ req.body.customer_id} doesnot exist.`
+    };
+  }
+  else{
+    return {
+      status: status,
+      message: err.message || message
+    };
+  }
+}
 
 function authenticateUser(req) {
   try {
-    var decoded = jwt.verify(req.token, 'secretkey');
+    var decoded = jwt.verify(req.token, process.env.SECRET_KEY);
     return true
   } catch (err) {
     return false
@@ -60,15 +79,16 @@ exports.addAddress = (req, res) => {
         res.status(201).send(data);
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        console.log(status);
+        res.status(status).send({
+          message: message
         });
       });
   }
 };
 
-exports.addOnlineCustomer = (req, res) => {
+exports.signup = async (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     res.status(500).send({
@@ -79,14 +99,13 @@ exports.addOnlineCustomer = (req, res) => {
     // Validate request
     if (!req.body.customer_fname || !req.body.email ||
       !req.body.address_id || !req.body.username ||
-      !req.body.gender) {
+      !req.body.gender || !req.body.password) {
       res.status(400).send({
-        message: "Customer First Name can not be empty!"
+        message: "All fields are required!"
       });
       return;
     }
-
-    // Create a Record
+    const hashedPassword = await bcrypt.hash(req.body.password, 10)
     const onlineCustomerContent = {
       customer_fname: req.body.customer_fname,
       customer_lname: req.body.customer_lname ? req.body.customer_lname : '',
@@ -95,6 +114,7 @@ exports.addOnlineCustomer = (req, res) => {
       customer_address_id: req.body.address_id,
       customer_username: req.body.username,
       customer_gender: req.body.gender,
+      customer_password: hashedPassword
     };
 
     // Save Record in the database
@@ -103,10 +123,18 @@ exports.addOnlineCustomer = (req, res) => {
         res.status(201).send(data);
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
-        });
+        if (err.message === "Validation error"){
+          res.status(400).send({
+            message:
+              "Email Or Username Already Taken, Please enter unique user name"
+          });
+        }
+        else{
+          res.status(500).send({
+            message:
+              err.message || "Some error occurred."
+          });
+        }
       });
   }
 };
@@ -123,7 +151,7 @@ exports.addCarton = (req, res) => {
     if (!req.body.len || !req.body.width ||
       !req.body.height) {
       res.status(400).send({
-        message: "Customer First Name can not be empty!"
+        message: "Carton len width height can not be empty!"
       });
       return;
     }
@@ -141,9 +169,9 @@ exports.addCarton = (req, res) => {
         res.status(201).send(data);
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -183,9 +211,9 @@ exports.addOrderHeader = (req, res) => {
         res.status(201).send(data);
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -220,9 +248,9 @@ exports.addShipper = (req, res) => {
         res.status(201).send(data);
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -262,9 +290,9 @@ exports.addProducts = (req, res) => {
         res.status(201).send(data);
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -299,9 +327,9 @@ exports.addOrderItems = (req, res) => {
         res.status(201).send(data);
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -335,9 +363,9 @@ exports.addProductClass = (req, res) => {
         res.status(201).send(data);
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -356,9 +384,9 @@ exports.getAllAddress = (req, res) => {
         res.send(data).status(200)
       })
       .catch(verificationStatus => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -375,13 +403,13 @@ exports.getAddress = (req, res) => {
     const id = req.params.id;
     AddressTableReference.findByPk(id)
       .then(data => {
-        console.log("res data: ", data);
+        // console.log("res data: ", data);
         res.status(200).send(data)
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -408,13 +436,13 @@ exports.getCustomer = (req, res) => {
 
     OnlineCustomerTableReference.findOne({ where: condition })
       .then(data => {
-        console.log("res data: ", data);
+        // console.log("res data: ", data);
         res.status(200).send(data)
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred."
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -444,8 +472,9 @@ exports.updateAddress = (req, res) => {
         }
       })
       .catch(err => {
-        res.status(500).send({
-          message: "Error updating OrderItem with id=" + id
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
         });
       });
   }
@@ -499,10 +528,10 @@ exports.deleteAllAddress = (req, res) => {
         res.send({ message: `${nums} OrderItems were deleted successfully!` });
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred while removing all OrderItems."
-        })
+        const {status, message} = errorHandler(err, req)
+        res.status(status).send({
+          message: message
+        });
       });
   }
 }
@@ -516,7 +545,7 @@ exports.getAddressByState = (req, res) => {
   }
   else {
     const state = req.params.ch;
-    console.log("State: " + state);
+    // console.log("State: " + state);
     var condition = state ? { state: { [Op.like]: `%${state}%` } } : null;
 
     AddressTableReference.findAll({ where: condition })
@@ -532,31 +561,50 @@ exports.getAddressByState = (req, res) => {
   }
 }
 
-exports.jwtLogin = (req, res) => {
+exports.jwtLogin = async (req, res) => {
   const input_username = req.body.username; //we can add email also
+  const password = req.body.password;
 
   // Validate request
-  if (!input_username) {
+  if (!input_username || !password) {
     res.status(400).send({
-      message: "Username can not be empty!"
+      message: "Username or Password can not be empty!"
     });
-    return;
   }
-  var condition = { customer_username: input_username }
+  var condition = [{ customer_username: input_username }]
   OnlineCustomerTableReference.findOne({ where: condition })
     .then(data => {
-      console.log("res data: ", data['dataValues']);
-      jwt.sign({ user: data }, 'secretkey', { expiresIn: '24h' }, (err, token) => {
-        res.send({
-          token: token
-        })
+      // console.log("res data: ", data['dataValues']);
+      // console.log("decrypt: "+(password));
+      if (data === null){
+        res.status(404).send({
+          message:"Cannot find user" // "Forbidden"
+        });
+      }
+      bcrypt.compare(req.body.password, data['dataValues']['customer_password'])
+      .then(result => {
+        if (result){
+          jwt.sign({ user: data }, process.env.SECRET_KEY, { expiresIn: process.env.TOKEN_EXPIRY_TIME }, (err, token) => {
+            res.send({
+              token: token
+            })
+          })
+        }
+        else{
+          res.status(403).send({
+            message: "Incorrect Password." // "Forbidden"
+          });
+        }
       })
-    })
+      .catch(err => {
+        res.status(404).send({
+          message:err.message // "Forbidden"
+        });
+      });
+    })      
     .catch(err => {
-      res.status(403).send({
-        message:
-          err.message || "Some error occurred."
-        // "Forbidden"
+      res.status(404).send({
+        message:err.message // "Forbidden"
       });
     });
 }

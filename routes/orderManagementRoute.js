@@ -5,13 +5,13 @@ module.exports = (app, version) => {
    
     // Create a new Records
     // router.post("/address", OrderManagemetController.addAddress);
-    router.post("/onlineCustomer", OrderManagemetController.addOnlineCustomer);
-    router.post("/carton", OrderManagemetController.addCarton);
-    router.post("/orderHeader", OrderManagemetController.addOrderHeader);
-    router.post("/shipper", OrderManagemetController.addShipper);
-    router.post("/product", OrderManagemetController.addProducts);
-    router.post("/orderItem", OrderManagemetController.addOrderItems);
-    router.post("/productClass", OrderManagemetController.addProductClass);
+    router.route("/signup").post(OrderManagemetController.signup);
+    router.route("/carton").post(OrderManagemetController.addCarton);
+    router.route("/orderHeader").post(OrderManagemetController.addOrderHeader);
+    router.route("/shipper").post(OrderManagemetController.addShipper);
+    router.route("/product").post(OrderManagemetController.addProducts);
+    router.route("/orderItem").post(OrderManagemetController.addOrderItems);
+    router.route("/productClass").post(OrderManagemetController.addProductClass);
 
     //Retrive records
     router.route("/address").get(OrderManagemetController.getAllAddress).delete(OrderManagemetController.deleteAllAddress)
