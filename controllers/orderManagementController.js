@@ -45,9 +45,9 @@ exports.addAddress = (req, res) => {
     if (!req.body.address_line_1 || !req.body.pincode) {
       var datetime = new Date();
       res.status(HttpStatus.BAD_REQUEST).send({
-        timestamp: timestamp,
+        timestamp: datetime,
         status: HttpStatus.BAD_REQUEST,
-        error: error,
+        error: errorMessages.BAD_REQUEST,
         message: "ADDRESS LINE-1 Or PINCODE can not be empty!"
       });
       return;
@@ -140,17 +140,17 @@ exports.signup = async (req, res) => {
         var datetime = new Date();
         if (err.message === "Validation error") {
           res.status(HttpStatus.BAD_REQUEST).send({
-            timestamp: timestamp,
+            timestamp: datetime,
             status: HttpStatus.BAD_REQUEST,
-            error: error,
+            error: errorMessages.BAD_REQUEST,
             message: errorMessages.USERNAME_ALREADY_TAKEN
           });
         }
         else {
           res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-            timestamp: timestamp,
+            timestamp: datetime,
             status: HttpStatus.INTERNAL_SERVER_ERROR,
-            error: error,
+            error: errorMessages.INTERNAL_SERVER_ERROR,
             message: err.message || errorMessages.SOMETHING_WENT_WRONG
           });
         }
@@ -230,9 +230,9 @@ exports.addOrderHeader = (req, res) => {
       !req.body.payment_mode) {
       var datetime = new Date();
       res.status(HttpStatus.BAD_REQUEST).send({
-        timestamp: timestamp,
+        timestamp: datetime,
         status: HttpStatus.BAD_REQUEST,
-        error: error,
+        error: errorMessages.BAD_REQUEST,
         message: "Customer ID, Order Date, ShipperID and Payment mode is required."
       });
       return;
