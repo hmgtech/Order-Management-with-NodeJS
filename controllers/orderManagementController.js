@@ -37,16 +37,17 @@ exports.addAddress = (req, res) => {
       timestamp: timestamp,
       status: status,
       error: error,
-      timestamp: timestamp,
-      status: status,
-      error: error,
       message: message
     })
   }
   else {
     // Validate request
     if (!req.body.address_line_1 || !req.body.pincode) {
+      var datetime = new Date();
       res.status(HttpStatus.BAD_REQUEST).send({
+        timestamp: timestamp,
+        status: HttpStatus.BAD_REQUEST,
+        error: error,
         message: "ADDRESS LINE-1 Or PINCODE can not be empty!"
       });
       return;
@@ -94,9 +95,6 @@ exports.signup = async (req, res) => {
       timestamp: timestamp,
       status: status,
       error: error,
-      timestamp: timestamp,
-      status: status,
-      error: error,
       message: message
     })
   }
@@ -139,15 +137,21 @@ exports.signup = async (req, res) => {
         });
       })
       .catch(err => {
+        var datetime = new Date();
         if (err.message === "Validation error") {
           res.status(HttpStatus.BAD_REQUEST).send({
+            timestamp: timestamp,
+            status: HttpStatus.BAD_REQUEST,
+            error: error,
             message: errorMessages.USERNAME_ALREADY_TAKEN
           });
         }
         else {
           res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-            message:
-              err.message || errorMessages.SOMETHING_WENT_WRONG
+            timestamp: timestamp,
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            error: error,
+            message: err.message || errorMessages.SOMETHING_WENT_WRONG
           });
         }
       });
@@ -224,7 +228,11 @@ exports.addOrderHeader = (req, res) => {
     // Validate request
     if (!req.body.customer_id || !req.body.order_date || !req.body.shipper_id ||
       !req.body.payment_mode) {
+      var datetime = new Date();
       res.status(HttpStatus.BAD_REQUEST).send({
+        timestamp: timestamp,
+        status: HttpStatus.BAD_REQUEST,
+        error: error,
         message: "Customer ID, Order Date, ShipperID and Payment mode is required."
       });
       return;

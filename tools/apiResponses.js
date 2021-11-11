@@ -1,85 +1,86 @@
 const HttpStatus = require('http-status-codes').StatusCodes;
 const errorMessage = require('./apiResponseMessages')
 
-
-var datetime = new Date();
 exports.errorHandler = (err, req) => {
+    var datetime = new Date();
     console.log(err);
     let status = 500
     let message = "Some error occurred."
-    if (err.parent.errno === 1452){
-      return {
-        status: 404,
-        message: `ID ${ req.body.customer_id} doesnot exist.`,
-        error : `NOT FOUND`,
-        timestamp: datetime
-      };
+    if (err.parent.errno === 1452) {
+        return {
+            status: 404,
+            message: `ID ${req.body.customer_id} doesnot exist.`,
+            error: `NOT FOUND`,
+            timestamp: datetime
+        };
     }
-    if (err.parent.errno === 1009){
-      return {
-        status: 404,
-        message: `ID ${ req.body.customer_id} doesnot exist.`,
-        error : `NOT FOUND`,
-        timestamp: datetime
-      };
+    if (err.parent.errno === 1009) {
+        return {
+            status: 404,
+            message: `ID ${req.body.customer_id} doesnot exist.`,
+            error: `NOT FOUND`,
+            timestamp: datetime
+        };
     }
-    else{
-      return {
-        status: status,
-        message: err.message || message,
-        error : `INTERNAL SERVER ERROR`,
-        timestamp: datetime
-      };
+    else {
+        return {
+            status: status,
+            message: err.message || message,
+            error: `INTERNAL SERVER ERROR`,
+            timestamp: datetime
+        };
     }
 }
 
-exports.notFound = () =>{
+exports.notFound = () => {
     return {
         status: HttpStatus.NOT_FOUND,
         message: `${errorMessage.NOT_FOUND}`,
-        error : `Not Found`,
+        error: `Not Found`,
         timestamp: datetime
     }
 }
 
-exports.internalServerError = (err) =>{
+exports.internalServerError = (err) => {
     return {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: `${errorMessage.SOMETHING_WENT_WRONG} => ${err.message}`,
-        error : `INTERNAL SERVER ERROR`,
+        error: `INTERNAL SERVER ERROR`,
         timestamp: datetime
     }
 }
 
-exports.accessDenied = () =>{
+exports.accessDenied = () => {
     return {
         status: HttpStatus.FORBIDDEN,
         message: errorMessage.ACCESS_DENIED,
-        error : `FORBIDDEN`,
+        error: `FORBIDDEN`,
         timestamp: datetime
     }
 }
 
 exports.badRequest = () => {
+    var datetime = new Date();
     return {
         status: HttpStatus.BAD_REQUEST,
         message: errorMessage.ACCESS_DENIED,
-        error : `BAD_REQUEST`,
+        error: `BAD_REQUEST`,
         timestamp: datetime
     }
 }
 
 exports.allFieldsRequired = () => {
+    var datetime = new Date();
     return {
         status: HttpStatus.BAD_REQUEST,
         message: errorMessage.ALL_FIELD_REQUIRED,
-        error : `BAD_REQUEST`,
+        error: `BAD_REQUEST`,
         timestamp: datetime
     }
 }
 
-
-exports.successfullyUpdated= (num) => {
+exports.successfullyUpdated = (num) => {
+    var datetime = new Date();
     return {
         status: HttpStatus.OK,
         message: `${num} ${errorMessage.SUCCESSFUL_UPDATED}`,
@@ -88,6 +89,7 @@ exports.successfullyUpdated= (num) => {
 }
 
 exports.successfullyCreated = () => {
+    var datetime = new Date();
     return {
         status: HttpStatus.CREATED,
         message: `${errorMessage.RECORD_CREATED}`,
@@ -96,6 +98,7 @@ exports.successfullyCreated = () => {
 }
 
 exports.successfullyRetrived = () => {
+    var datetime = new Date();
     return {
         status: HttpStatus.OK,
         message: `${errorMessage.SUCCESSFULLY_RETRIVED}`,
@@ -104,15 +107,17 @@ exports.successfullyRetrived = () => {
 }
 
 exports.notUpdated = (id) => {
+    var datetime = new Date();
     return {
         status: HttpStatus.BAD_REQUEST,
         message: `ID: ${id} => ${errorMessage.NOT_UPDATED}`,
-        error : `BAD_REQUEST`,
+        error: `BAD_REQUEST`,
         timestamp: datetime
     }
 }
 
 exports.successfullyDeleted = (num) => {
+    var datetime = new Date();
     return {
         status: HttpStatus.OK,
         message: `${num} ${errorMessage.SUCCESSFUL_DELETED}`,
@@ -121,10 +126,11 @@ exports.successfullyDeleted = (num) => {
 }
 
 exports.notDeleted = (id) => {
+    var datetime = new Date();
     return {
         status: HttpStatus.BAD_REQUEST,
         message: `ID: ${id} => ${errorMessage.NOT_DELETED}`,
-        error : `BAD_REQUEST`,
+        error: `BAD_REQUEST`,
         timestamp: datetime
     }
 }
