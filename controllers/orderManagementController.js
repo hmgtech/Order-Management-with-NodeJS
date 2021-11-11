@@ -42,14 +42,14 @@ exports.addAddress = (req, res) => {
   }
   else {
     // Validate request
-    if (!req.body.address_line_1 || !req.body.pincode) {
-      var datetime = new Date();
-      res.status(HttpStatus.BAD_REQUEST).send({
-        timestamp: datetime,
-        status: HttpStatus.BAD_REQUEST,
-        error: errorMessages.BAD_REQUEST,
-        message: "ADDRESS LINE-1 Or PINCODE can not be empty!"
-      });
+    if (!req.body.address_line_1 || !req.body.address_line_2 || !req.body.city || !req.body.state || !req.body.pincode || !req.body.country) {
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
       return;
     }
 
@@ -227,14 +227,14 @@ exports.addOrderHeader = (req, res) => {
   else {
     // Validate request
     if (!req.body.customer_id || !req.body.order_date || !req.body.shipper_id ||
-      !req.body.payment_mode) {
-      var datetime = new Date();
-      res.status(HttpStatus.BAD_REQUEST).send({
-        timestamp: datetime,
-        status: HttpStatus.BAD_REQUEST,
-        error: errorMessages.BAD_REQUEST,
-        message: "Customer ID, Order Date, ShipperID and Payment mode is required."
-      });
+      !req.body.payment_mode || !req.body.order_status || !req.body.payment_date || !req.body.order_shipment_date) {
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
       return;
     }
 
