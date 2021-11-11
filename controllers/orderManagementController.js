@@ -1,7 +1,11 @@
 const jwt = require("jsonwebtoken")
-const db = require("../models");
 var bcrypt = require('bcrypt');
+const HttpStatus = require('http-status-codes').StatusCodes;
 require("dotenv").config()
+
+const db = require("../models");
+const { errorHandler, accessDenied, badRequest, successfullyDeleted, allFieldsRequired, notDeleted, internalServerError, notUpdated, successfullyUpdated } = require('../tools/errorHandler');
+const errorMessages = require("../tools/errorMessages");
 const Op = db.Sequelize.Op;
 
 // Intializing Tables
@@ -13,30 +17,6 @@ const ShipperTabeReference = db.shipper
 const OrderItemTableReference = db.order_item
 const ProductTableReference = db.product
 const ProductClassTableReference = db.product_class
-
-function errorHandler(err, req){
-  console.log(err);
-  let status = 500
-  let message = "Some error occurred."
-  if (err.parent.errno === 1452){
-    return {
-      status: 404,
-      message: `ID ${ req.body.customer_id} doesnot exist.`
-    };
-  }
-  if (err.parent.errno === 1009){
-    return {
-      status: 500,
-      message: `ID ${ req.body.customer_id} doesnot exist.`
-    };
-  }
-  else{
-    return {
-      status: status,
-      message: err.message || message
-    };
-  }
-}
 
 function authenticateUser(req) {
   try {
@@ -50,14 +30,15 @@ function authenticateUser(req) {
 exports.addAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
-    })
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
+    }) 
   }
   else {
     // Validate request
     if (!req.body.address_line_1 || !req.body.pincode) {
-      res.status(400).send({
+      res.status(HttpStatus.BAD_REQUEST).send({
         message: "ADDRESS LINE-1 Or PINCODE can not be empty!"
       });
       return;
@@ -76,11 +57,11 @@ exports.addAddress = (req, res) => {
     // Save Record in the database
     AddressTableReference.create(addressContent)
       .then(data => {
-        res.status(201).send(data);
+        res.status(HttpStatus.CREATED).send(data);
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
-        console.log(status);
+        // console.log(status);
         res.status(status).send({
           message: message
         });
@@ -91,8 +72,9 @@ exports.addAddress = (req, res) => {
 exports.signup = async (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
@@ -100,9 +82,10 @@ exports.signup = async (req, res) => {
     if (!req.body.customer_fname || !req.body.email ||
       !req.body.address_id || !req.body.username ||
       !req.body.gender || !req.body.password) {
-      res.status(400).send({
-        message: "All fields are required!"
-      });
+        const {status, message} = allFieldsRequired()
+        res.status(status).send({
+          message: message
+        })
       return;
     }
     const salt = await bcrypt.genSalt()
@@ -121,19 +104,18 @@ exports.signup = async (req, res) => {
     // Save Record in the database
     OnlineCustomerTableReference.create(onlineCustomerContent)
       .then(data => {
-        res.status(201).send(data);
+        res.status(HttpStatus.CREATED).send(data);
       })
       .catch(err => {
         if (err.message === "Validation error"){
-          res.status(400).send({
-            message:
-              "Email Or Username Already Taken, Please enter unique user name"
+          res.status(HttpStatus.BAD_REQUEST).send({
+            message: errorMessages.USERNAME_ALREADY_TAKEN
           });
         }
         else{
-          res.status(500).send({
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             message:
-              err.message || "Some error occurred."
+              err.message || errorMessages.SOMETHING_WENT_WRONG
           });
         }
       });
@@ -143,17 +125,19 @@ exports.signup = async (req, res) => {
 exports.addCarton = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
     // Validate request
     if (!req.body.len || !req.body.width ||
       !req.body.height) {
-      res.status(400).send({
-        message: "Carton len width height can not be empty!"
-      });
+        const {status, message} = allFieldsRequired()
+        res.status(status).send({
+          message: message
+        })
       return;
     }
 
@@ -167,7 +151,7 @@ exports.addCarton = (req, res) => {
     // Save Record in the database
     CartonTableReference.create(cartonContent)
       .then(data => {
-        res.status(201).send(data);
+        res.status(HttpStatus.CREATED).send(data);
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
@@ -181,16 +165,17 @@ exports.addCarton = (req, res) => {
 exports.addOrderHeader = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
     // Validate request
     if (!req.body.customer_id || !req.body.order_date || !req.body.shipper_id ||
       !req.body.payment_mode) {
-      res.status(400).send({
-        message: "Customer First Name can not be empty!"
+      res.status(HttpStatus.BAD_REQUEST).send({
+        message: "Customer ID, Order Date, ShipperID and Payment mode is required."
       });
       return;
     }
@@ -209,7 +194,7 @@ exports.addOrderHeader = (req, res) => {
     // Save Record in the database
     OrderHeaderTabeReference.create(orderHeaderContent)
       .then(data => {
-        res.status(201).send(data);
+        res.status(HttpStatus.CREATED).send(data);
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
@@ -223,16 +208,18 @@ exports.addOrderHeader = (req, res) => {
 exports.addShipper = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
     // Validate request
     if (!req.body.shipper_name || !req.body.shipper_phone || !req.body.shipper_address) {
-      res.status(400).send({
-        message: "Customer First Name can not be empty!"
-      });
+      const {status, message} = allFieldsRequired()
+        res.status(status).send({
+          message: message
+        })
       return;
     }
 
@@ -246,7 +233,7 @@ exports.addShipper = (req, res) => {
     // Save Record in the database
     ShipperTabeReference.create(shipperContent)
       .then(data => {
-        res.status(201).send(data);
+        res.status(HttpStatus.CREATED).send(data);
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
@@ -260,16 +247,18 @@ exports.addShipper = (req, res) => {
 exports.addProducts = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
     // Validate request
     if (!req.body.product_desc || !req.body.product_price) {
-      res.status(400).send({
-        message: "product_price or product_desc can not be empty!"
-      });
+      const {status, message} = allFieldsRequired()
+        res.status(status).send({
+          message: message
+        })
       return;
     }
 
@@ -288,7 +277,7 @@ exports.addProducts = (req, res) => {
     // Save Record in the database
     ProductTableReference.create(productContent)
       .then(data => {
-        res.status(201).send(data);
+        res.status(HttpStatus.CREATED).send(data);
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
@@ -302,16 +291,18 @@ exports.addProducts = (req, res) => {
 exports.addOrderItems = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
     // Validate request
     if (!req.body.order_id || !req.body.product_id || !req.body.product_quantity) {
-      res.status(400).send({
-        message: "Customer First Name can not be empty!"
-      });
+      const {status, message} = allFieldsRequired()
+        res.status(status).send({
+          message: message
+        })
       return;
     }
 
@@ -325,7 +316,7 @@ exports.addOrderItems = (req, res) => {
     // Save Record in the database
     OrderItemTableReference.create(orderItemContent)
       .then(data => {
-        res.status(201).send(data);
+        res.status(HttpStatus.CREATED).send(data);
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
@@ -339,16 +330,18 @@ exports.addOrderItems = (req, res) => {
 exports.addProductClass = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
     // Validate request
     if (!req.body.product_class_code || !req.body.product_class_desc) {
-      res.status(400).send({
-        message: "Customer First Name can not be empty!"
-      });
+      const {status, message} = allFieldsRequired()
+        res.status(status).send({
+          message: message
+        })
       return;
     }
 
@@ -361,7 +354,7 @@ exports.addProductClass = (req, res) => {
     // Save Record in the database
     ProductClassTableReference.create(productClassContent)
       .then(data => {
-        res.status(201).send(data);
+        res.status(HttpStatus.CREATED).send(data);
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
@@ -375,16 +368,17 @@ exports.addProductClass = (req, res) => {
 exports.getAllAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
     AddressTableReference.findAll()
       .then(data => {
-        res.send(data).status(200)
+        res.send(data).status(HttpStatus.OK)
       })
-      .catch(verificationStatus => {
+      .catch(err => {
         const {status, message} = errorHandler(err, req)
         res.status(status).send({
           message: message
@@ -396,8 +390,9 @@ exports.getAllAddress = (req, res) => {
 exports.getAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
@@ -405,7 +400,7 @@ exports.getAddress = (req, res) => {
     AddressTableReference.findByPk(id)
       .then(data => {
         // console.log("res data: ", data);
-        res.status(200).send(data)
+        res.status(HttpStatus.OK).send(data)
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
@@ -419,8 +414,9 @@ exports.getAddress = (req, res) => {
 exports.getCustomer = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
@@ -428,8 +424,8 @@ exports.getCustomer = (req, res) => {
 
     // Validate request
     if (!input_username) {
-      res.status(400).send({
-        message: "Username can not be empty!"
+      res.status(HttpStatus.BAD_REQUEST).send({
+        message: errorMessages.ALL_FIELD_REQUIRED
       });
       return;
     }
@@ -438,7 +434,7 @@ exports.getCustomer = (req, res) => {
     OnlineCustomerTableReference.findOne({ where: condition })
       .then(data => {
         // console.log("res data: ", data);
-        res.status(200).send(data)
+        res.status(HttpStatus.OK).send(data)
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
@@ -452,8 +448,9 @@ exports.getCustomer = (req, res) => {
 exports.updateAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
@@ -463,13 +460,16 @@ exports.updateAddress = (req, res) => {
     })
       .then(num => {
         if (num == 1) {
-          res.send({
-            message: "OrderItem was updated successfully."
-          });
-        } else {
-          res.send({
-            message: `Cannot update OrderItem with id=${id}. Maybe OrderItem was not found or req.body is empty!`
-          });
+          const {status, message} = successfullyUpdated(num)
+          res.status(status).send({
+            message: message
+          })
+        } 
+        else {
+          const {status, message} = notUpdated(id)
+          res.status(status).send({
+            message: message
+          })
         }
       })
       .catch(err => {
@@ -484,8 +484,9 @@ exports.updateAddress = (req, res) => {
 exports.deleteAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
@@ -496,19 +497,23 @@ exports.deleteAddress = (req, res) => {
     })
       .then(num => {
         if (num == 1) {
-          res.send({
-            message: "OrderItem was deleted successfully!"
-          });
-        } else {
-          res.send({
-            message: `Cannot delete OrderItem with id=${id}. Maybe OrderItem was not found!`
-          });
+          const {status, message} = successfullyDeleted(num)
+          res.status(status).send({
+            message: message
+          })
+        } 
+        else {
+          const {status, message} = notDeleted(id)
+          res.status(status).send({
+            message: message
+          })
         }
       })
       .catch(err => {
-        res.status(500).send({
-          message: "Could not delete OrderItem with id=" + id
-        });
+        const {status, message} = notDeleted(id)
+          res.status(status).send({
+            message: message
+          })
       });
   }
 }
@@ -516,8 +521,9 @@ exports.deleteAddress = (req, res) => {
 exports.deleteAllAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
@@ -526,7 +532,10 @@ exports.deleteAllAddress = (req, res) => {
       truncate: false
     })
       .then(nums => {
-        res.send({ message: `${nums} OrderItems were deleted successfully!` });
+        const {status, message} = successfullyDeleted(nums)
+          res.status(status).send({
+            message: message
+          })
       })
       .catch(err => {
         const {status, message} = errorHandler(err, req)
@@ -540,8 +549,9 @@ exports.deleteAllAddress = (req, res) => {
 exports.getAddressByState = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    res.status(500).send({
-      message: verificationStatus.message || "Some error occurred."
+    const {status, message} = accessDenied()
+    res.status(status).send({
+      message: message
     })
   }
   else {
@@ -554,10 +564,10 @@ exports.getAddressByState = (req, res) => {
         res.send(data);
       })
       .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred while retrieving OrderItems."
-        });
+        const {status, message} = internalServerError(err)
+        res.status(status).send({
+          message: message
+        })
       });
   }
 }
@@ -568,8 +578,8 @@ exports.jwtLogin = async (req, res) => {
 
   // Validate request
   if (!input_username || !password) {
-    res.status(400).send({
-      message: "Username or Password can not be empty!"
+    res.status(HttpStatus.BAD_REQUEST).send({
+      message: errorMessages.ALL_FIELD_REQUIRED
     });
   }
   var condition = [{ customer_username: input_username }]
@@ -578,8 +588,8 @@ exports.jwtLogin = async (req, res) => {
       // console.log("res data: ", data['dataValues']);
       // console.log("decrypt: "+(password));
       if (data === null){
-        res.status(404).send({
-          message:"Cannot find user" // "Forbidden"
+        res.status(HttpStatus.NOT_FOUND).send({
+          message:errorMessages.INVALID_USERNAME // "Forbidden"
         });
       }
       bcrypt.compare(req.body.password, data['dataValues']['customer_password'])
@@ -592,19 +602,19 @@ exports.jwtLogin = async (req, res) => {
           })
         }
         else{
-          res.status(403).send({
-            message: "Incorrect Password." // "Forbidden"
+          res.status(HttpStatus.FORBIDDEN).send({
+            message: errorMessages.INVALID_PASSWORD // "Forbidden"
           });
         }
       })
       .catch(err => {
-        res.status(404).send({
+        res.status(HttpStatus.NOT_FOUND).send({
           message:err.message // "Forbidden"
         });
       });
     })      
     .catch(err => {
-      res.status(404).send({
+      res.status(HttpStatus.NOT_FOUND).send({
         message:err.message // "Forbidden"
       });
     });
