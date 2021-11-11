@@ -4,8 +4,10 @@ const HttpStatus = require('http-status-codes').StatusCodes;
 require("dotenv").config()
 
 const db = require("../models");
-const { errorHandler, accessDenied, badRequest, successfullyDeleted, allFieldsRequired, notDeleted, internalServerError, notUpdated, successfullyUpdated } = require('../tools/errorHandler');
-const errorMessages = require("../tools/errorMessages");
+const { errorHandler, accessDenied, badRequest, successfullyDeleted, allFieldsRequired, 
+        notDeleted, internalServerError, notUpdated, successfullyUpdated,
+        successfullyCreated, successfullyRetrived, notFound } = require('../tools/apiResponses');
+const errorMessages = require("../tools/apiResponseMessages");
 const Op = db.Sequelize.Op;
 
 // Intializing Tables
@@ -30,10 +32,16 @@ function authenticateUser(req) {
 exports.addAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
-    }) 
+    })
   }
   else {
     // Validate request
@@ -57,12 +65,21 @@ exports.addAddress = (req, res) => {
     // Save Record in the database
     AddressTableReference.create(addressContent)
       .then(data => {
-        res.status(HttpStatus.CREATED).send(data);
+        const { status, message, timestamp } = successfullyCreated()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         // console.log(status);
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -72,8 +89,14 @@ exports.addAddress = (req, res) => {
 exports.signup = async (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
@@ -82,10 +105,13 @@ exports.signup = async (req, res) => {
     if (!req.body.customer_fname || !req.body.email ||
       !req.body.address_id || !req.body.username ||
       !req.body.gender || !req.body.password) {
-        const {status, message} = allFieldsRequired()
-        res.status(status).send({
-          message: message
-        })
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
       return;
     }
     const salt = await bcrypt.genSalt()
@@ -95,7 +121,7 @@ exports.signup = async (req, res) => {
       customer_lname: req.body.customer_lname ? req.body.customer_lname : '',
       customer_email: req.body.email,
       customer_phone: req.body.phone ? req.body.phone : '',
-      customer_address_id: req.body.address_id,
+      address_id: req.body.address_id,
       customer_username: req.body.username,
       customer_gender: req.body.gender,
       customer_password: hashedPassword
@@ -104,15 +130,21 @@ exports.signup = async (req, res) => {
     // Save Record in the database
     OnlineCustomerTableReference.create(onlineCustomerContent)
       .then(data => {
-        res.status(HttpStatus.CREATED).send(data);
+        const { status, message, timestamp } = successfullyCreated()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        if (err.message === "Validation error"){
+        if (err.message === "Validation error") {
           res.status(HttpStatus.BAD_REQUEST).send({
             message: errorMessages.USERNAME_ALREADY_TAKEN
           });
         }
-        else{
+        else {
           res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             message:
               err.message || errorMessages.SOMETHING_WENT_WRONG
@@ -125,8 +157,11 @@ exports.signup = async (req, res) => {
 exports.addCarton = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
@@ -134,10 +169,13 @@ exports.addCarton = (req, res) => {
     // Validate request
     if (!req.body.len || !req.body.width ||
       !req.body.height) {
-        const {status, message} = allFieldsRequired()
-        res.status(status).send({
-          message: message
-        })
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
       return;
     }
 
@@ -151,11 +189,20 @@ exports.addCarton = (req, res) => {
     // Save Record in the database
     CartonTableReference.create(cartonContent)
       .then(data => {
-        res.status(HttpStatus.CREATED).send(data);
+        const { status, message, timestamp } = successfullyCreated()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -165,8 +212,11 @@ exports.addCarton = (req, res) => {
 exports.addOrderHeader = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
@@ -194,11 +244,20 @@ exports.addOrderHeader = (req, res) => {
     // Save Record in the database
     OrderHeaderTabeReference.create(orderHeaderContent)
       .then(data => {
-        res.status(HttpStatus.CREATED).send(data);
+        const { status, message, timestamp } = successfullyCreated()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -208,18 +267,24 @@ exports.addOrderHeader = (req, res) => {
 exports.addShipper = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
   else {
     // Validate request
     if (!req.body.shipper_name || !req.body.shipper_phone || !req.body.shipper_address) {
-      const {status, message} = allFieldsRequired()
-        res.status(status).send({
-          message: message
-        })
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
       return;
     }
 
@@ -233,11 +298,20 @@ exports.addShipper = (req, res) => {
     // Save Record in the database
     ShipperTabeReference.create(shipperContent)
       .then(data => {
-        res.status(HttpStatus.CREATED).send(data);
+        const { status, message, timestamp } = successfullyCreated()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -247,18 +321,24 @@ exports.addShipper = (req, res) => {
 exports.addProducts = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
   else {
     // Validate request
     if (!req.body.product_desc || !req.body.product_price) {
-      const {status, message} = allFieldsRequired()
-        res.status(status).send({
-          message: message
-        })
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
       return;
     }
 
@@ -277,11 +357,20 @@ exports.addProducts = (req, res) => {
     // Save Record in the database
     ProductTableReference.create(productContent)
       .then(data => {
-        res.status(HttpStatus.CREATED).send(data);
+        const { status, message, timestamp } = successfullyCreated()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -291,18 +380,24 @@ exports.addProducts = (req, res) => {
 exports.addOrderItems = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
   else {
     // Validate request
     if (!req.body.order_id || !req.body.product_id || !req.body.product_quantity) {
-      const {status, message} = allFieldsRequired()
-        res.status(status).send({
-          message: message
-        })
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
       return;
     }
 
@@ -316,11 +411,20 @@ exports.addOrderItems = (req, res) => {
     // Save Record in the database
     OrderItemTableReference.create(orderItemContent)
       .then(data => {
-        res.status(HttpStatus.CREATED).send(data);
+        const { status, message, timestamp } = successfullyCreated()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -330,18 +434,24 @@ exports.addOrderItems = (req, res) => {
 exports.addProductClass = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
   else {
     // Validate request
     if (!req.body.product_class_code || !req.body.product_class_desc) {
-      const {status, message} = allFieldsRequired()
-        res.status(status).send({
-          message: message
-        })
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
       return;
     }
 
@@ -354,11 +464,20 @@ exports.addProductClass = (req, res) => {
     // Save Record in the database
     ProductClassTableReference.create(productClassContent)
       .then(data => {
-        res.status(HttpStatus.CREATED).send(data);
+        const { status, message, timestamp } = successfullyCreated()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -368,19 +487,31 @@ exports.addProductClass = (req, res) => {
 exports.getAllAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
   else {
     AddressTableReference.findAll()
       .then(data => {
-        res.send(data).status(HttpStatus.OK)
+        const { status, message, timestamp } = successfullyRetrived()
+        res.status(HttpStatus.CREATED).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -390,21 +521,44 @@ exports.getAllAddress = (req, res) => {
 exports.getAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
   else {
     const id = req.params.id;
+    // Validate request
+    if (!id) {
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
+      return;
+    }
     AddressTableReference.findByPk(id)
       .then(data => {
         // console.log("res data: ", data);
-        res.status(HttpStatus.OK).send(data)
+        const { status, message, timestamp } = successfullyRetrived()
+        res.status(HttpStatus.CREATED).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -414,8 +568,11 @@ exports.getAddress = (req, res) => {
 exports.getCustomer = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
@@ -424,9 +581,13 @@ exports.getCustomer = (req, res) => {
 
     // Validate request
     if (!input_username) {
-      res.status(HttpStatus.BAD_REQUEST).send({
-        message: errorMessages.ALL_FIELD_REQUIRED
-      });
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
       return;
     }
     var condition = { customer_username: input_username }
@@ -434,11 +595,30 @@ exports.getCustomer = (req, res) => {
     OnlineCustomerTableReference.findOne({ where: condition })
       .then(data => {
         // console.log("res data: ", data);
-        res.status(HttpStatus.OK).send(data)
+        if (data === null) {
+          const { status, message, error, timestamp } = notFound()
+          res.status(status).send({
+            timestamp: timestamp,
+            status: status,
+            error: error,
+            message: message
+          })
+          return;
+        }
+        const { status, message, timestamp } = successfullyRetrived()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -448,33 +628,55 @@ exports.getCustomer = (req, res) => {
 exports.updateAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
   else {
     const id = req.params.id;
+    // Validate request
+    if (!id) {
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
+      return;
+    }
     AddressTableReference.update(req.body, {
       where: { address_id: id }
     })
       .then(num => {
         if (num == 1) {
-          const {status, message} = successfullyUpdated(num)
+          const { status, message, timestamp } = successfullyUpdated(num)
           res.status(status).send({
+            timestamp: timestamp,
+            status: status,
             message: message
           })
-        } 
+        }
         else {
-          const {status, message} = notUpdated(id)
+          const { status, message, error, timestamp } = notUpdated(id)
           res.status(status).send({
+            timestamp: timestamp,
+            status: status,
+            error: error,
             message: message
           })
         }
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -484,36 +686,57 @@ exports.updateAddress = (req, res) => {
 exports.deleteAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
   else {
     const id = req.params.id;
-
+    // Validate request
+    if (!id) {
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
+      return;
+    }
     AddressTableReference.destroy({
       where: { address_id: id }
     })
       .then(num => {
         if (num == 1) {
-          const {status, message} = successfullyDeleted(num)
+          const { status, message, timestamp } = successfullyDeleted(num)
           res.status(status).send({
+            timestamp: timestamp,
+            status: status,
             message: message
           })
-        } 
+        }
         else {
-          const {status, message} = notDeleted(id)
+          const { status, message, error, timestamp } = notDeleted(id)
           res.status(status).send({
+            timestamp: timestamp,
+            status: status,
+            error: error,
             message: message
           })
         }
       })
       .catch(err => {
-        const {status, message} = notDeleted(id)
-          res.status(status).send({
-            message: message
-          })
+        const { status, message, error, timestamp } = notDeleted(id)
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
+          message: message
+        })
       });
   }
 }
@@ -521,8 +744,11 @@ exports.deleteAddress = (req, res) => {
 exports.deleteAllAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
@@ -532,14 +758,20 @@ exports.deleteAllAddress = (req, res) => {
       truncate: false
     })
       .then(nums => {
-        const {status, message} = successfullyDeleted(nums)
-          res.status(status).send({
-            message: message
-          })
+        const { status, message, error, timestamp } = successfullyDeleted(nums)
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
+          message: message
+        })
       })
       .catch(err => {
-        const {status, message} = errorHandler(err, req)
+        const { status, message, error, timestamp } = errorHandler(err, req)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         });
       });
@@ -549,23 +781,56 @@ exports.deleteAllAddress = (req, res) => {
 exports.getAddressByState = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
-    const {status, message} = accessDenied()
+    const { status, message, error, timestamp } = accessDenied()
     res.status(status).send({
+      timestamp: timestamp,
+      status: status,
+      error: error,
       message: message
     })
   }
   else {
     const state = req.params.ch;
+    // Validate request
+    if (!state) {
+      const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
+      return;
+    }
     // console.log("State: " + state);
     var condition = state ? { state: { [Op.like]: `%${state}%` } } : null;
 
     AddressTableReference.findAll({ where: condition })
       .then(data => {
-        res.send(data);
+        if (data === null) {
+          const { status, message, error, timestamp } = notFound()
+          res.status(status).send({
+            timestamp: timestamp,
+            status: status,
+            error: error,
+            message: message
+          })
+          return;
+        }
+        const { status, message, timestamp } = successfullyRetrived()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          message: message,
+          data: data
+        });
       })
       .catch(err => {
-        const {status, message} = internalServerError(err)
+        const { status, message, error, timestamp } = internalServerError(err)
         res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
           message: message
         })
       });
@@ -578,44 +843,65 @@ exports.jwtLogin = async (req, res) => {
 
   // Validate request
   if (!input_username || !password) {
-    res.status(HttpStatus.BAD_REQUEST).send({
-      message: errorMessages.ALL_FIELD_REQUIRED
-    });
+    const { status, message, error, timestamp } = allFieldsRequired()
+      res.status(status).send({
+        timestamp: timestamp,
+        status: status,
+        error: error,
+        message: message
+      })
   }
   var condition = [{ customer_username: input_username }]
   OnlineCustomerTableReference.findOne({ where: condition })
     .then(data => {
       // console.log("res data: ", data['dataValues']);
       // console.log("decrypt: "+(password));
-      if (data === null){
-        res.status(HttpStatus.NOT_FOUND).send({
-          message:errorMessages.INVALID_USERNAME // "Forbidden"
-        });
+      if (data === null) {
+        const { status, message, error, timestamp } = notFound()
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
+          message: message
+        })
+        return;
       }
       bcrypt.compare(req.body.password, data['dataValues']['customer_password'])
-      .then(result => {
-        if (result){
-          jwt.sign({ user: data }, process.env.SECRET_KEY, { expiresIn: process.env.TOKEN_EXPIRY_TIME }, (err, token) => {
-            res.send({
-              token: token
+        .then(result => {
+          if (result) {
+            jwt.sign({ user: data }, process.env.SECRET_KEY, { expiresIn: process.env.TOKEN_EXPIRY_TIME }, (err, token) => {
+              res.send({
+                token: token
+              })
             })
+          }
+          else {
+            const { status, message, error, timestamp } = accessDenied()
+            res.status(status).send({
+              timestamp: timestamp,
+              status: status,
+              error: error,
+              message: message
+            })
+          }
+        })
+        .catch(err => {
+          const { status, message, error, timestamp } = internalServerError(err)
+          res.status(status).send({
+            timestamp: timestamp,
+            status: status,
+            error: error,
+            message: message
           })
-        }
-        else{
-          res.status(HttpStatus.FORBIDDEN).send({
-            message: errorMessages.INVALID_PASSWORD // "Forbidden"
-          });
-        }
-      })
-      .catch(err => {
-        res.status(HttpStatus.NOT_FOUND).send({
-          message:err.message // "Forbidden"
         });
-      });
-    })      
+    })
     .catch(err => {
-      res.status(HttpStatus.NOT_FOUND).send({
-        message:err.message // "Forbidden"
-      });
+      const { status, message, error, timestamp } = internalServerError(err)
+        res.status(status).send({
+          timestamp: timestamp,
+          status: status,
+          error: error,
+          message: message
+        })
     });
 }
