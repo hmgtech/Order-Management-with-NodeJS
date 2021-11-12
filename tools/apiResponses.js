@@ -32,16 +32,18 @@ exports.errorHandler = (err, req) => {
     }
 }
 
-exports.notFound = () => {
+exports.notFound = (item) => {
+    var datetime = new Date();
     return {
         status: HttpStatus.NOT_FOUND,
-        message: `${errorMessage.NOT_FOUND}`,
+        message: `${item} ${errorMessage.NOT_FOUND}`,
         error: `Not Found`,
         timestamp: datetime
     }
 }
 
 exports.internalServerError = (err) => {
+    var datetime = new Date();
     return {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: `${errorMessage.SOMETHING_WENT_WRONG} => ${err.message}`,
@@ -51,6 +53,7 @@ exports.internalServerError = (err) => {
 }
 
 exports.accessDenied = () => {
+    var datetime = new Date();
     return {
         status: HttpStatus.FORBIDDEN,
         message: errorMessage.ACCESS_DENIED,

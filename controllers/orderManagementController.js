@@ -507,7 +507,7 @@ exports.getAllAddress = (req, res) => {
     AddressTableReference.findAll()
       .then(data => {
         const { status, message, timestamp } = successfullyRetrived()
-        res.status(HttpStatus.CREATED).send({
+        res.status(status).send({
           timestamp: timestamp,
           status: status,
           message: message,
@@ -554,7 +554,7 @@ exports.getAddress = (req, res) => {
       .then(data => {
         // console.log("res data: ", data);
         const { status, message, timestamp } = successfullyRetrived()
-        res.status(HttpStatus.CREATED).send({
+        res.status(status).send({
           timestamp: timestamp,
           status: status,
           message: message,
@@ -604,7 +604,7 @@ exports.getCustomer = (req, res) => {
       .then(data => {
         // console.log("res data: ", data);
         if (data === null) {
-          const { status, message, error, timestamp } = notFound()
+          const { status, message, error, timestamp } = notFound(input_username)
           res.status(status).send({
             timestamp: timestamp,
             status: status,
@@ -816,7 +816,7 @@ exports.getAddressByState = (req, res) => {
     AddressTableReference.findAll({ where: condition })
       .then(data => {
         if (data === null) {
-          const { status, message, error, timestamp } = notFound()
+          const { status, message, error, timestamp } = notFound(state)
           res.status(status).send({
             timestamp: timestamp,
             status: status,
@@ -865,7 +865,7 @@ exports.jwtLogin = async (req, res) => {
       // console.log("res data: ", data['dataValues']);
       // console.log("decrypt: "+(password));
       if (data === null) {
-        const { status, message, error, timestamp } = notFound()
+        const { status, message, error, timestamp } = notFound(input_username)
         res.status(status).send({
           timestamp: timestamp,
           status: status,
@@ -878,8 +878,13 @@ exports.jwtLogin = async (req, res) => {
         .then(result => {
           if (result) {
             jwt.sign({ user: data }, process.env.SECRET_KEY, { expiresIn: process.env.TOKEN_EXPIRY_TIME }, (err, token) => {
-              res.send({
-                token: token
+              const { status, message, timestamp } = successfullyRetrived()
+              let tokenObj = {token: token}
+              res.status(status).send({
+                timestamp: timestamp,
+                status: status,
+                message: message,
+                data: tokenObj
               })
             })
           }
