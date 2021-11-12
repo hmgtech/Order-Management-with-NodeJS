@@ -29,27 +29,34 @@ function authenticateUser(req) {
   }
 }
 
+function conslidateResponse(timestamp, status, message, error=undefined, data=undefined){
+  let responseObj = {
+    timestamp: timestamp,
+    status: status,
+    message: message
+  }
+  if (error != undefined){
+    responseObj.error = error
+  }
+  if (data != undefined){
+    responseObj.data = data
+  }
+  return responseObj  
+}
+
 exports.addAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     // Validate request
     if (!req.body.address_line_1 || !req.body.address_line_2 || !req.body.city || !req.body.state || !req.body.pincode || !req.body.country) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
 
@@ -67,22 +74,13 @@ exports.addAddress = (req, res) => {
     AddressTableReference.create(addressContent)
       .then(data => {
         const { status, message, timestamp } = successfullyCreated()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, undefined, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        // console.log(status);
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 };
@@ -91,12 +89,9 @@ exports.signup = async (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
+    return
   }
   else {
     // Validate request
@@ -104,12 +99,8 @@ exports.signup = async (req, res) => {
       !req.body.address_id || !req.body.username ||
       !req.body.gender || !req.body.password) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
     const salt = await bcrypt.genSalt()
@@ -129,30 +120,18 @@ exports.signup = async (req, res) => {
     OnlineCustomerTableReference.create(onlineCustomerContent)
       .then(data => {
         const { status, message, timestamp } = successfullyCreated()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         var datetime = new Date();
         if (err.message === "Validation error") {
-          res.status(HttpStatus.BAD_REQUEST).send({
-            timestamp: datetime,
-            status: HttpStatus.BAD_REQUEST,
-            error: errorMessages.BAD_REQUEST,
-            message: errorMessages.USERNAME_ALREADY_TAKEN
-          });
+          responseObj = conslidateResponse(datetime, HttpStatus.BAD_REQUEST, errorMessages.USERNAME_ALREADY_TAKEN, errorMessages.BAD_REQUEST)
+          res.status(HttpStatus.BAD_REQUEST).send(responseObj)
         }
         else {
-          res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-            timestamp: datetime,
-            status: HttpStatus.INTERNAL_SERVER_ERROR,
-            error: errorMessages.INTERNAL_SERVER_ERROR,
-            message: err.message || errorMessages.SOMETHING_WENT_WRONG
-          });
+          responseObj = conslidateResponse(datetime, HttpStatus.INTERNAL_SERVER_ERROR, err.message || errorMessages.SOMETHING_WENT_WRONG, errorMessages.INTERNAL_SERVER_ERROR)
+          res.status(HttpStatus.BAD_REQUEST).send(responseObj)
         }
       });
   }
@@ -162,24 +141,16 @@ exports.addCarton = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     // Validate request
     if (!req.body.len || !req.body.width ||
       !req.body.height) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
 
@@ -194,21 +165,13 @@ exports.addCarton = (req, res) => {
     CartonTableReference.create(cartonContent)
       .then(data => {
         const { status, message, timestamp } = successfullyCreated()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 };
@@ -217,24 +180,16 @@ exports.addOrderHeader = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     // Validate request
     if (!req.body.customer_id || !req.body.order_date || !req.body.shipper_id ||
       !req.body.payment_mode || !req.body.order_status || !req.body.payment_date || !req.body.order_shipment_date) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
 
@@ -253,21 +208,13 @@ exports.addOrderHeader = (req, res) => {
     OrderHeaderTabeReference.create(orderHeaderContent)
       .then(data => {
         const { status, message, timestamp } = successfullyCreated()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 };
@@ -276,23 +223,15 @@ exports.addShipper = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     // Validate request
     if (!req.body.shipper_name || !req.body.shipper_phone || !req.body.shipper_address) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
 
@@ -307,21 +246,13 @@ exports.addShipper = (req, res) => {
     ShipperTabeReference.create(shipperContent)
       .then(data => {
         const { status, message, timestamp } = successfullyCreated()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 };
@@ -330,23 +261,15 @@ exports.addProducts = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     // Validate request
     if (!req.body.product_desc || !req.body.product_price) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
 
@@ -366,21 +289,13 @@ exports.addProducts = (req, res) => {
     ProductTableReference.create(productContent)
       .then(data => {
         const { status, message, timestamp } = successfullyCreated()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 };
@@ -389,23 +304,15 @@ exports.addOrderItems = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     // Validate request
     if (!req.body.order_id || !req.body.product_id || !req.body.product_quantity) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
 
@@ -420,21 +327,13 @@ exports.addOrderItems = (req, res) => {
     OrderItemTableReference.create(orderItemContent)
       .then(data => {
         const { status, message, timestamp } = successfullyCreated()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 };
@@ -443,23 +342,15 @@ exports.addProductClass = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     // Validate request
     if (!req.body.product_class_code || !req.body.product_class_desc) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
 
@@ -473,21 +364,13 @@ exports.addProductClass = (req, res) => {
     ProductClassTableReference.create(productClassContent)
       .then(data => {
         const { status, message, timestamp } = successfullyCreated()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 };
@@ -496,32 +379,20 @@ exports.getAllAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     AddressTableReference.findAll()
       .then(data => {
         const { status, message, timestamp } = successfullyRetrived()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, undefined, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 }
@@ -530,45 +401,29 @@ exports.getAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     const id = req.params.id;
     // Validate request
     if (!id) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
     AddressTableReference.findByPk(id)
       .then(data => {
         // console.log("res data: ", data);
         const { status, message, timestamp } = successfullyRetrived()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, undefined, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 }
@@ -577,12 +432,8 @@ exports.getCustomer = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     const input_username = req.body.username; //we can add email also
@@ -590,12 +441,8 @@ exports.getCustomer = (req, res) => {
     // Validate request
     if (!input_username) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
     var condition = { customer_username: input_username }
@@ -605,30 +452,18 @@ exports.getCustomer = (req, res) => {
         // console.log("res data: ", data);
         if (data === null) {
           const { status, message, error, timestamp } = notFound(input_username)
-          res.status(status).send({
-            timestamp: timestamp,
-            status: status,
-            error: error,
-            message: message
-          })
+          responseObj = conslidateResponse(timestamp, status, message, error)
+          res.status(status).send(responseObj)
           return;
         }
         const { status, message, timestamp } = successfullyRetrived()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, undefined, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 }
@@ -637,24 +472,16 @@ exports.updateAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     const id = req.params.id;
     // Validate request
     if (!id) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
     AddressTableReference.update(req.body, {
@@ -663,30 +490,19 @@ exports.updateAddress = (req, res) => {
       .then(num => {
         if (num == 1) {
           const { status, message, timestamp } = successfullyUpdated(num)
-          res.status(status).send({
-            timestamp: timestamp,
-            status: status,
-            message: message
-          })
+          responseObj = conslidateResponse(timestamp, status, message)
+          res.status(status).send(responseObj)
         }
         else {
           const { status, message, error, timestamp } = notUpdated(id)
-          res.status(status).send({
-            timestamp: timestamp,
-            status: status,
-            error: error,
-            message: message
-          })
+          responseObj = conslidateResponse(timestamp, status, message, error)
+          res.status(status).send(responseObj)
         }
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 }
@@ -695,24 +511,16 @@ exports.deleteAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     const id = req.params.id;
     // Validate request
     if (!id) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
     AddressTableReference.destroy({
@@ -721,30 +529,19 @@ exports.deleteAddress = (req, res) => {
       .then(num => {
         if (num == 1) {
           const { status, message, timestamp } = successfullyDeleted(num)
-          res.status(status).send({
-            timestamp: timestamp,
-            status: status,
-            message: message
-          })
+          responseObj = conslidateResponse(timestamp, status, message)
+          res.status(status).send(responseObj)
         }
         else {
           const { status, message, error, timestamp } = notDeleted(id)
-          res.status(status).send({
-            timestamp: timestamp,
-            status: status,
-            error: error,
-            message: message
-          })
+          responseObj = conslidateResponse(timestamp, status, message, error)
+          res.status(status).send(responseObj)
         }
       })
       .catch(err => {
         const { status, message, error, timestamp } = notDeleted(id)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        })
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 }
@@ -753,12 +550,8 @@ exports.deleteAllAddress = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     AddressTableReference.destroy({
@@ -766,22 +559,14 @@ exports.deleteAllAddress = (req, res) => {
       truncate: false
     })
       .then(nums => {
-        const { status, message, error, timestamp } = successfullyDeleted(nums)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        })
+        const { status, message, timestamp } = successfullyDeleted(nums)
+        responseObj = conslidateResponse(timestamp, status, message)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = errorHandler(err, req)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        });
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 }
@@ -790,24 +575,16 @@ exports.getAddressByState = (req, res) => {
   var verificationStatus = authenticateUser(req)
   if (verificationStatus === false) {
     const { status, message, error, timestamp } = accessDenied()
-    res.status(status).send({
-      timestamp: timestamp,
-      status: status,
-      error: error,
-      message: message
-    })
+    responseObj = conslidateResponse(timestamp, status, message, error)
+    res.status(status).send(responseObj)
   }
   else {
     const state = req.params.ch;
     // Validate request
     if (!state) {
       const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
       return;
     }
     // console.log("State: " + state);
@@ -817,30 +594,18 @@ exports.getAddressByState = (req, res) => {
       .then(data => {
         if (data === null) {
           const { status, message, error, timestamp } = notFound(state)
-          res.status(status).send({
-            timestamp: timestamp,
-            status: status,
-            error: error,
-            message: message
-          })
+          responseObj = conslidateResponse(timestamp, status, message, error)
+          res.status(status).send(responseObj)
           return;
         }
         const { status, message, timestamp } = successfullyRetrived()
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          message: message,
-          data: data
-        });
+        responseObj = conslidateResponse(timestamp, status, message, undefined, data)
+        res.status(status).send(responseObj)
       })
       .catch(err => {
         const { status, message, error, timestamp } = internalServerError(err)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        })
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
       });
   }
 }
@@ -852,26 +617,16 @@ exports.jwtLogin = async (req, res) => {
   // Validate request
   if (!input_username || !password) {
     const { status, message, error, timestamp } = allFieldsRequired()
-      res.status(status).send({
-        timestamp: timestamp,
-        status: status,
-        error: error,
-        message: message
-      })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
   }
   var condition = [{ customer_username: input_username }]
   OnlineCustomerTableReference.findOne({ where: condition })
     .then(data => {
-      // console.log("res data: ", data['dataValues']);
-      // console.log("decrypt: "+(password));
       if (data === null) {
         const { status, message, error, timestamp } = notFound(input_username)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        })
+        responseObj = conslidateResponse(timestamp, status, message, error)
+        res.status(status).send(responseObj)
         return;
       }
       bcrypt.compare(req.body.password, data['dataValues']['customer_password'])
@@ -879,42 +634,26 @@ exports.jwtLogin = async (req, res) => {
           if (result) {
             jwt.sign({ user: data }, process.env.SECRET_KEY, { expiresIn: process.env.TOKEN_EXPIRY_TIME }, (err, token) => {
               const { status, message, timestamp } = successfullyRetrived()
-              let tokenObj = {token: token}
-              res.status(status).send({
-                timestamp: timestamp,
-                status: status,
-                message: message,
-                data: tokenObj
-              })
+              let data = {token: token}
+              responseObj = conslidateResponse(timestamp, status, message, undefined, data)
+              res.status(status).send(responseObj)
             })
           }
           else {
             const { status, message, error, timestamp } = accessDenied()
-            res.status(status).send({
-              timestamp: timestamp,
-              status: status,
-              error: error,
-              message: message
-            })
+            responseObj = conslidateResponse(timestamp, status, message, error)
+            res.status(status).send(responseObj)
           }
         })
         .catch(err => {
           const { status, message, error, timestamp } = internalServerError(err)
-          res.status(status).send({
-            timestamp: timestamp,
-            status: status,
-            error: error,
-            message: message
-          })
+          responseObj = conslidateResponse(timestamp, status, message, error)
+          res.status(status).send(responseObj)
         });
     })
     .catch(err => {
       const { status, message, error, timestamp } = internalServerError(err)
-        res.status(status).send({
-          timestamp: timestamp,
-          status: status,
-          error: error,
-          message: message
-        })
+      responseObj = conslidateResponse(timestamp, status, message, error)
+      res.status(status).send(responseObj)
     });
 }
